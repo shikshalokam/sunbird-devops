@@ -35,7 +35,7 @@ spec:
 {{ toYaml .Values.resources | indent 10 }}
         ports:
         - containerPort: {{ .Values.network.port }}
-{{- end }}
+        {{- end }}
 
 ---
 apiVersion: v1
