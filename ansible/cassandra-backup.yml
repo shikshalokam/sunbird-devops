@@ -2,5 +2,9 @@
   become: yes
   vars_files:
     - ['{{ inventory_dir }}/secrets.yml']
+  environment:
+        AWS_ACCESS_KEY_ID: "{{aws_access_key | d('')}}"
+        AWS_SECRET_ACCESS_KEY: "{{aws_secret_key | d('')}}"
+        AWS_DEFAULT_REGION: "{{aws_region | d('')}}"
   roles:
     - cassandra-backup
