@@ -29,6 +29,8 @@
     var: doc_data
 
 - name: Uploading to S3
+  args:
+    chdir: /data/cassandra/backup
   command: aws s3 cp "{{ cassandra_backup_gzip_file_name }}".tar.gz s3://sl-production-db-backups/"{{ cassandra_backup_gzip_file_name }}".tar.gz
   environment:
     AWS_ACCESS_KEY_ID: "{{aws_access_key | d('')}}"
