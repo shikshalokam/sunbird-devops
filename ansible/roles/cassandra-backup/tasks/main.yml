@@ -28,18 +28,12 @@
   debug:
     var: doc_data
 
-- name: Ensure azure blob storage container exists
-  command: az storage container create  --name {{ cassandra_backup_azure_container_name }}
-  ignore_errors: true
+- name: Uploading to S3
+  command: aws s3 cp "{{ cassandra_backup_gzip_file_name }}".tar.gz s3://sl-production-db-backups/"{{ cassandra_backup_gzip_file_name }}".tar.gz
   environment:
-    AZURE_STORAGE_ACCOUNT: "{{ sunbird_management_storage_account_name }}"
-    AZURE_STORAGE_KEY: "{{ sunbird_management_storage_account_key }}"
-
-- name: Upload to azure blob storage
-  command: az storage blob upload --name "{{ cassandra_backup_gzip_file_name }}".tar.gz --file {{ cassandra_backup_gzip_file_path }} --container-name {{ cassandra_backup_azure_container_name }}
-  environment:
-    AZURE_STORAGE_ACCOUNT: "{{ sunbird_management_storage_account_name }}"
-    AZURE_STORAGE_KEY: "{{ sunbird_management_storage_account_key }}"
+    AWS_ACCESS_KEY_ID: "{{aws_access_key | d('')}}"
+    AWS_SECRET_ACCESS_KEY: "{{aws_secret_key | d('')}}"
+    AWS_DEFAULT_REGION: "{{aws_region | d('')}}"
   async: 3600
   poll: 10
 
