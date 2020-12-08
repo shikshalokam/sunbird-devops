@@ -29,7 +29,11 @@
   #poll: 10
 
 - name : Uploading to S3
-  command: aws s3 cp {{ postgresql_backup_gzip_file_path }} s3://sl-production-db-backups/"{{ postgresql_backup_gzip_file_name }}" --region ap-south-1
+  command: aws s3 cp {{ postgresql_backup_gzip_file_path }} s3://sl-production-db-backups/"{{ postgresql_backup_gzip_file_name }}"
+  environment:
+    AWS_ACCESS_KEY_ID: "{{aws_access_key | d('')}}"
+    AWS_SECRET_ACCESS_KEY: "{{aws_secret_key | d('')}}"
+    AWS_DEFAULT_REGION: "{{aws_region | d('')}}"
   async: 3600
   poll: 10
   
