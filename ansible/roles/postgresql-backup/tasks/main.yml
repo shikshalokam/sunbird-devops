@@ -8,7 +8,7 @@
     postgresql_backup_gzip_file_path: "{{ postgresql_backup_dir }}/{{ postgresql_backup_gzip_file_name }}"
 
 - name: Save backup
-  command: bash -lc "pg_dumpall | gzip > {{ postgresql_backup_gzip_file_path }}"
+  command: bash -lc "pg_dump -d superset | gzip > {{ postgresql_backup_gzip_file_path }}"
   become_user: "{{ postgresql_user }}"
   async: 3600
   poll: 10
