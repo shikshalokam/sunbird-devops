@@ -30,8 +30,8 @@
 
 - name : Uploading to S3
   environment:
-    AWS_ACCESS_KEY_ID: "{{aws_access_key}}"
-    AWS_SECRET_ACCESS_KEY: "{{aws_secret_key}}"
+    aws_access_key: "{{aws_access_key}}"
+    aws_secret_key: "{{aws_secret_key}}"
   command: aws s3 cp {{ postgresql_backup_gzip_file_path }} s3://sl-production-db-backups/"{{ postgresql_backup_gzip_file_name }}" --region ap-south-1
   async: 3600
   poll: 10
