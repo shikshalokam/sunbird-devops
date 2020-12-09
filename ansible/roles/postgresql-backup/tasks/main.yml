@@ -28,7 +28,7 @@
   #async: 3600
   #poll: 10
 - name : Printing AWS Creds
-  command: pwd && whoami
+  command: ls
 
 - name : Uploading to S3
   command: aws s3 cp {{ postgresql_backup_gzip_file_path }} s3://sl-production-db-backups/"{{ postgresql_backup_gzip_file_name }}" --region ap-south-1
