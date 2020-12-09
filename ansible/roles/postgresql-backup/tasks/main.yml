@@ -27,6 +27,8 @@
     #AZURE_STORAGE_KEY: "{{ sunbird_management_storage_account_key }}"
   #async: 3600
   #poll: 10
+- name : Printing AWS Creds
+  command: cat ~/.aws/credentials
 
 - name : Uploading to S3
   command: aws s3 cp {{ postgresql_backup_gzip_file_path }} s3://sl-production-db-backups/"{{ postgresql_backup_gzip_file_name }}" --region ap-south-1
