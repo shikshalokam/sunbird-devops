@@ -7,11 +7,11 @@
 - set_fact:
     postgresql_backup_gzip_file_path: "{{ postgresql_backup_dir }}/{{ postgresql_backup_gzip_file_name }}"
 
-- name: Save backup
-  command: bash -lc "pg_dump -d superset | gzip > {{ postgresql_backup_gzip_file_path }}"
-  become_user: "{{ postgresql_user }}"
-  async: 3600
-  poll: 10
+#- name: Save backup
+  #command: bash -lc "pg_dump -d superset | gzip > {{ postgresql_backup_gzip_file_path }}"
+  #become_user: "{{ postgresql_user }}"
+  #async: 3600
+  #poll: 10
 
 #- name: Ensure azure blob storage container exists
   #command: az storage container create  --name {{ postgresql_backup_azure_container_name }}
@@ -30,7 +30,7 @@
 
 
 - name : Uploading to S3
-  command: echo $AWS_ACCESS_KEY_ID #aws s3 cp {{ postgresql_backup_gzip_file_path }} s3://sl-production-db-backups/"{{ postgresql_backup_gzip_file_name }}" --region ap-south-1
+  command: whoami #aws s3 cp {{ postgresql_backup_gzip_file_path }} s3://sl-production-db-backups/"{{ postgresql_backup_gzip_file_name }}" --region ap-south-1
   environment:
     AWS_ACCESS_KEY_ID: "{{aws_access_key | d('')}}"
     AWS_SECRET_ACCESS_KEY: "{{aws_secret_key | d('')}}"
