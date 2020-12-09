@@ -30,7 +30,7 @@
 
 
 - name : Uploading to S3
-  command: echo "{{aws_access_key}}" #aws s3 cp {{ postgresql_backup_gzip_file_path }} s3://sl-production-db-backups/"{{ postgresql_backup_gzip_file_name }}" --region ap-south-1
+  command: echo AWS_ACCESS_KEY_ID #aws s3 cp {{ postgresql_backup_gzip_file_path }} s3://sl-production-db-backups/"{{ postgresql_backup_gzip_file_name }}" --region ap-south-1
   environment:
     AWS_ACCESS_KEY_ID: "{{aws_access_key | d('')}}"
     AWS_SECRET_ACCESS_KEY: "{{aws_secret_key | d('')}}"
