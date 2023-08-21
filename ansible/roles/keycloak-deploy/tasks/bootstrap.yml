@@ -1,10 +1,12 @@
 ---
-- name: start service
-  become: true
-  command: /etc/init.d/keycloak start
-  poll: 5
-  async: 5
-  ignore_errors: true
+- name: start keycloak service
+  debug: msg="starting keycloak"
+  notify:
+    - start service
+    - wait for keycloak to start
+  changed_when: true
+
+- meta: flush_handlers
 
 - name: Create admin user
   become_user: "{{ wildfly_user }}"
@@ -13,40 +15,39 @@
         keycloak_management_password is defined
   ignore_errors: true
 
-- name: status service
-  become: true
-  command: /etc/init.d/keycloak status
-  register: keycloak
-  poll: 5
-  async: 10
+- name: stop keycloak service
+  debug: msg="stopping keycloak"
+  notify:
+    - stop service
+    - wait for keycloak to stop
+  changed_when: true
 
-- name: stop service
-  become: true
-  command: /etc/init.d/keycloak stop && Pkill keycloak
-  when: "keycloak.stdout.find('running') != -1"
-  poll: 5
-  async: 10
-  ignore_errors: true
+- meta: flush_handlers
 
-- name: start service
-  become: true
-  command: /etc/init.d/keycloak start
-  poll: 5
-  async: 5
+- name: start keycloak with script upload feature temporarily
+  shell: "nohup {{keycloak_home}}/bin/standalone.sh -Dkeycloak.profile.feature.upload_scripts=enabled -b={{ansible_default_ipv4.address}} -bprivate={{ansible_default_ipv4.address}} --server-config standalone-ha.xml &"
+  become: yes
+  become_user: "{{ wildfly_user }}"
+  notify: wait for keycloak to start
 
-- name: Waiting Until Keycloak is fully functional
-  wait_for:
-    host: "{{ inventory_hostname }}"
-    port: 8080
-    delay: 5
+- meta: flush_handlers
 
 - name: Install dependencies for keycloak
   apt:
-    name: "{{ item }}"
+    name: ["python-setuptools"]
     update_cache: true
-  with_items:
-    - python-pip
-    - python-setuptools
+
+- name: Ensure python packages are installed
+  apt: 
+    name: ["python-pip", "python-dev"]
+    update_cache: yes
+  when: ansible_os_family == 'Debian' and ansible_distribution_version | float < 18
+
+- name: Ensure python packages are installed
+  apt:
+    name: ["python3-pip", "python3-dev"]
+    update_cache: yes
+  when: ansible_os_family == 'Debian' and ansible_distribution_version | float > 18
 
 - name: Copying python libraries
   copy:
@@ -56,7 +57,7 @@
 - name: Initialize python library to run keycloak bootstrap script
   shell: cd /tmp/python-keycloak-0.12.0 && python setup.py install
 
-- name: Save keycalok vars to json
+- name: Save keycloak vars to json
   template:
     src: "keycloak-bootstrap.conf.j2"
     dest: "/tmp/keycloak-bootstrap.conf.json"
@@ -74,10 +75,6 @@
     dest: "/tmp/roles.json"
     mode: "0644"
 
-- name: Pausing for 60 seconds sometime for keycloak to run completely
-  pause:
-    seconds: 60
-
 - name: Copy the keycloak bootstrap script
   copy:
     src: "{{ role_path }}/files/python-keycloak-0.12.0/keycloak"
@@ -89,3 +86,15 @@
   until: '"404" not in out.stderr'
   retries: 2
   delay: 10
+  run_once: true
+
+- name: stop keycloak service
+  debug: msg="restarting keycloak"
+  notify:
+    - stop service
+    - wait for keycloak to stop
+    - start service
+    - wait for keycloak to start
+  changed_when: true
+
+- meta: flush_handlers

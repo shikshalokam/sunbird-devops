@@ -1,0 +1,274 @@
+---
+# defaults file for sunbird-monitoring
+fullnameOverride: sunbird-monitoring
+monitoring_stack:
+  - prometheus-operator
+  - cassandra-jmx-exporter
+  - elasticsearch-exporter
+  - logger
+  - blackbox-exporter
+  - additional-scrape-configs
+  - alertrules
+  - kafka-topic-exporter
+  - prometheus-redis-exporter
+  - processing-kafka-exporter
+  - json-path-exporter
+  - oauth2-proxy
+
+# Variable to add additional charts in monitoring.
+# eg:
+# monitoring_stack_additional_charts:
+  # - custom_chart1
+  # - custom_monitoring_chart2
+monitoring_stack_additional_charts: []
+
+namespace: monitoring
+
+monitor_alerts_mail_from_email:
+monitor_alerts_mail_server_host:
+monitor_alerts_mail_server_port: 587
+monitor_alerts_mail_server_username:
+monitor_alerts_mail_server_password:
+monitor_alerts_slack_url:
+monitor_alerts_slack_channel:
+env: dev
+kubernetes_cluster_name: kubernetes-1
+#dp_monitor_alerts_slack_channel: "{{ monitor_alerts_slack_channel }}"
+#dp_monitor_alerts_slack_url: "{{ core_vault_monitor_alerts_slack_url }}"
+dp_monitor_alerts_warning_slack_url: "{{ core_vault_monitor_alerts_slack_url }}"
+dp_monitor_alerts_warning_slack_channel: "{{ monitor_alerts_slack_channel }}"
+dp_monitor_alerts_critical_slack_url: "{{ core_vault_monitor_alerts_slack_url }}"
+dp_monitor_alerts_critical_slack_channel: "{{ monitor_alerts_slack_channel }}"
+
+default_critical_mailing_list: "{{ default_mailing_list }}"
+default_fatal_mailing_list: "{{ default_mailing_list }}"
+lp_process_exporter_team_mailing_list: "{{ default_mailing_list }}"
+lp_process_exporter_team_mailing_list_critical: "{{ default_critical_mailing_list }}"
+lp_process_exporter_team_mailing_list_fatal: "{{ default_fatal_mailing_list }}"
+druid_team_mailing_list: "{{ default_mailing_list }}"
+druid_team_mailing_list_critical: "{{ default_critical_mailing_list }}"
+druid_team_mailing_list_fatal: "{{ default_fatal_mailing_list }}"
+default_mailing_list: "{{ alerts_mailing_list }}"
+dp_process_exporter_team_mailing_list: "{{ default_mailing_list }}"
+dp_process_exporter_team_mailing_list_critical: "{{ default_critical_mailing_list }}"
+dp_process_exporter_team_mailing_list_fatal: "{{ default_fatal_mailing_list }}"
+node_exporter_team_mailing_list: "{{ default_mailing_list }}"
+node_exporter_team_mailing_list_critical: "{{ default_critical_mailing_list }}"
+node_exporter_team_mailing_list_fatal: "{{ default_fatal_mailing_list }}"
+elasticsearch_exporter_team_mailing_list: "{{ default_mailing_list }}"
+elasticsearch_exporter_team_mailing_list_critical: "{{ default_critical_mailing_list }}"
+elasticsearch_exporter_team_mailing_list_fatal: "{{ default_fatal_mailing_list }}"
+blackbox_exporter_team_mailing_list: "{{ default_mailing_list }}"
+blackbox_exporter_team_mailing_list_critical: "{{ default_critical_mailing_list }}"
+blackbox_exporter_team_mailing_list_fatal: "{{ default_fatal_mailing_list }}"
+
+alert_teams:
+  - team: lp_process_exporter_team
+    group: groupname
+    alerts_mailing_list: "{{ lp_process_exporter_team_mailing_list }}"
+    services:
+      - tomcat_.*
+      - search_.*
+      - neo4j_.*
+      - kafka_.*
+      - zookeeper_.*
+      - yarn_.*
+      - redis-server.*
+      - cassandra_.*
+      - elasticsearch_.*
+      - logstash_.*
+    severity_mailing_filter:
+      - severity: critical
+        alerts_mailing_list: "{{ lp_process_exporter_team_mailing_list_critical }}"
+      - severity: fatal
+        alerts_mailing_list: "{{ lp_process_exporter_team_mailing_list_fatal }}"
+  - team: druid_process_exporter_team
+    group: groupname
+    alerts_mailing_list: "{{ druid_team_mailing_list }}"
+    services:
+      - druidzookeeper.*
+      - druidpostgres.*
+      - overlord.*
+      - coordinator.*
+      - historical.*
+      - broker.*
+      - middle-Manager.*
+    severity_mailing_filter:
+      - severity: critical
+        alerts_mailing_list: "{{ druid_team_mailing_list_critical }}"
+      - severity: fatal
+        alerts_mailing_list: "{{ druid_team_mailing_list_fatal }}"
+  - team: dp_process_exporter_team
+    group: groupname
+    alerts_mailing_list: "{{ dp_process_exporter_team_mailing_list }}"
+    services:
+      - analytics.*
+      - influx.*
+      - secor.*
+      - kafka_.*
+      - zookeeper_.*
+      - yarn_.*
+    severity_mailing_filter:
+      - severity: critical
+        alerts_mailing_list: "{{ dp_process_exporter_team_mailing_list_critical }}"
+      - severity: fatal
+        alerts_mailing_list: "{{ dp_process_exporter_team_mailing_list_fatal }}"
+  - team: node_exporter_team
+    group: job
+    alerts_mailing_list: "{{ node_exporter_team_mailing_list }}"
+    services:
+      - .*node-exporter
+    severity_mailing_filter:
+      - severity: critical
+        alerts_mailing_list: "{{ node_exporter_team_mailing_list_critical }}"
+      - severity: fatal
+        alerts_mailing_list: "{{ node_exporter_team_mailing_list_fatal }}"
+  - team: elasticsearch_exporter_team
+    group: service
+    alerts_mailing_list: "{{ elasticsearch_exporter_team_mailing_list }}"
+    services:
+      - .*elasticsearch-exporter
+    severity_mailing_filter:
+      - severity: critical
+        alerts_mailing_list: "{{ elasticsearch_exporter_team_mailing_list_critical }}"
+      - severity: fatal
+        alerts_mailing_list: "{{ elasticsearch_exporter_team_mailing_list_fatal }}"
+  - team: blackbox_exporter_team
+    group: service_name
+    alerts_mailing_list: "{{ blackbox_exporter_team_mailing_list }}"
+    services:
+      - .*-service
+    severity_mailing_filter:
+      - severity: critical
+        alerts_mailing_list: "{{ blackbox_exporter_team_mailing_list_critical }}"
+      - severity: fatal
+        alerts_mailing_list: "{{ blackbox_exporter_team_mailing_list_fatal }}"
+
+service_blackbox_checks:
+  - service_name: 'analytics-service'
+    probe_module: http_2xx
+    targets:
+      - "{{sunbird_analytics_api_base_url}}/health"
+  - service_name: 'learning-service'
+    probe_module: http_2xx
+    targets:
+      - "{{sunbird_content_repo_api_base_url}}/health"
+  - service_name: 'search-service'
+    probe_module: http_2xx
+    targets:
+      - "{{sunbird_search_service_api_base_url}}/health"
+  - service_name: 'keycloak-service'
+    probe_module: http_2xx
+    targets:
+      - "{{proto}}://{{proxy_server_name}}/auth/realms/sunbird/protocol/openid-connect/auth?client_id=portal&state=foo&redirect_uri=https%3A%2F%2F{{proxy_server_name}}%2Fprivate%2Findex%3Fauth_callback%3D1&scope=openid&response_type=code"
+
+kafka_topic_prefix: sunbird
+kafka_telemetry_assess_backup_warning: 50000
+kafka_telemetry_assess_raw_backup_threshold_warning: 50000
+content_consumption_events_backup_threshold_warning: 50000
+kafka_telemetry_denorm_backup_threshold_warning: 50000
+kafka_telemetry_derived_backup_threshold_warning: 50000
+kafka_events_deviceprofile_backup_threshold_warning: 50000
+kafka_telemetry_extractor_duplicate_backup_threshold_warning: 50000
+kafka_telemetry_extractor_failed_backup_threshold_warning: 50000
+kafka_telemetry_failed_backup_threshold_warning: 50000
+kafka_telemetry_ingestion_backup_threshold_warning: 50000
+kafka_graph_events_backup_threshold_warning: 50000
+kafka_learning_failed_events_backup_warning: 50000
+kafka_telemetry_raw_backup_threshold_warning: 50000
+kafka_telemetry_duplicate_backup_threshold_warning: 50000
+kafka_telemetry_ingestion_backup_threshold_warning: 50000
+kafka_telemetry_unique_backup_threshold_warning: 50000
+summary_backup_threshold_warning: 50000
+summary_channel_backup_threshold_warning: 50000
+
+
+kafka_telemetry_assess_backup_critical: 100000
+kafka_telemetry_assess_raw_backup_threshold_critical: 100000
+content_consumption_events_backup_threshold_critical: 100000
+kafka_telemetry_denorm_backup_threshold_critical: 100000
+kafka_telemetry_derived_backup_threshold_critical: 100000
+kafka_events_deviceprofile_backup_threshold_critical: 100000
+kafka_telemetry_extractor_duplicate_backup_threshold_critical: 100000
+kafka_telemetry_extractor_failed_backup_threshold_critical: 100000
+kafka_telemetry_failed_backup_threshold_critical: 100000
+kafka_telemetry_ingestion_backup_threshold_critical: 100000
+kafka_graph_events_backup_threshold_critical: 100000
+kafka_learning_failed_events_backup_critical: 100000
+kafka_telemetry_raw_backup_threshold_critical: 100000
+kafka_telemetry_duplicate_backup_threshold_critical: 100000
+kafka_telemetry_ingestion_backup_threshold_critical: 100000
+kafka_telemetry_unique_backup_threshold_critical: 100000
+summary_backup_threshold_critical: 100000
+summary_channel_backup_threshold_critical: 100000
+
+### kafka exporters related vars
+processing_cluster_zookeeper: "{{ groups['processing-cluster-zookeepers'] | difference(['localhost']) | map('regex_replace', '^(.*)$', '\\1:2181') | list}}"
+processing_cluster_kafka: "{{ groups['processing-cluster-kafka'] | difference(['localhost']) | map('regex_replace', '^(.*)$', '\\1:9092') | list}}"
+
+ingestion_cluster_zookeeper: "{{ groups['ingestion-cluster-zookeeper'] | difference(['localhost']) | map('regex_replace', '^(.*)$', '\\1:2181') | list}}"
+ingestion_cluster_kafka: "{{ groups['ingestion-cluster-kafka'] | difference(['localhost']) | map('regex_replace', '^(.*)$', '\\1:9092') | list}}"
+
+# These varaibles can be overridden in common.yaml
+prometheus_spec_overrides:
+  sb_test_var: dummy_var_not_to_throw_error
+alertmanager_spec_overrides:
+  sb_test_var: dummy_var_not_to_throw_error
+
+druid_raw_ingestion_lag_threshold: 200000
+druid_rollup_ingestion_lag_threshold: 200000
+rollup_druid_datasource: ""
+redis_process_names: ""
+
+vault_azure_spark_cluster_http_password: ""
+azure_spark_cluster_http_password: "{{ vault_azure_spark_cluster_http_password }}"
+ignore_alert_list: #### This is the var being used to skip the list of alerts.
+  - AlertmanagerConfigInconsistent
+  - AlertmanagerFailedReload
+  - AlertmanagerMembersInconsistent
+  - etcdGRPCRequestsSlow
+  - etcdHTTPRequestsSlow
+  - etcdHighCommitDurations
+  - etcdHighFsyncDurations
+  - etcdHighNumberOfFailedGRPCRequests
+  - etcdHighNumberOfFailedHTTPRequests
+  - etcdHighNumberOfFailedProposals
+  - etcdHighNumberOfLeaderChanges
+  - etcdInsufficientMembers
+  - etcdMemberCommunicationSlow
+  - etcdNoLeader
+  - KubeControllerManagerDown
+  - KubeSchedulerDown
+  - KubeAPIDown
+  - KubeStateMetricsDown
+  - PrometheusDuplicateTimestamps
+igonore_alert_list_custom: [] #### This var can be used for custom related. For example if an adopter want to add any alerts to be skipped then those list can be added here instead of taking entire list and overriding the same by adding in the private repo.
+
+# for example refer the below snippet:
+
+#igonore_alert_list_custom:
+  #- alertname1
+  #- alertname2
+  #- alertname3
+
+service_health_checks:
+  - service_name: 'analytics'
+    targets: "http://analytics-service.{{ namespace }}.svc.cluster.local:9000/health"
+  - service_name: 'learning-service'
+    targets: "http://{{ learningservice_ip }}:8080/learning-service/health"
+  - service_name: 'player'
+    targets: "http://player.{{ namespace }}.svc.cluster.local:3000/health"
+  - service_name: 'search'
+    targets: "http://search-service.{{ namespace }}.svc.cluster.local:9000/health"
+  - service_name: 'knowledgemw'
+    targets: "http://knowledge-mw-service.{{ namespace }}.svc.cluster.local:5000/health"
+  - service_name: 'content'
+    targets: "http://content-service.{{ namespace }}.svc.cluster.local:9000/health"
+  - service_name: 'lms'
+    targets: "http://lms-service.{{ namespace }}.svc.cluster.local:9000/health"
+  - service_name: 'learner'
+    targets: "http://learner-service.{{ namespace }}.svc.cluster.local:9000/health"
+
+api_response_upward_trend_threshold: 0.3
+
+kafka_exporter_image_tag: v1.3.0

@@ -1,0 +1,20 @@
+---
+- name: create the directory on remote to copy the json files
+  file: path={{ mongo_json_data }} state=directory
+
+- name: template and copy the json input data
+  template:
+    src: "{{ item }}.json"
+    dest: "{{ mongo_json_data }}"
+  with_items:
+  - "{{ graylog_mongo_collections.split(',') }}"
+
+- name: insert/upsert the data to mongodb
+  shell: "mongoimport --mode upsert --stopOnError --db={{ graylog_mongo_db }} --collection={{ item }} --file={{ mongo_json_data }}/{{ item }}.json"
+  with_items:
+  - "{{ graylog_mongo_collections.split(',') }}"
+
+- name: clean up
+  file:
+    path: "{{ mongo_json_data }}"
+    state: absent

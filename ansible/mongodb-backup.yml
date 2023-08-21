@@ -1,0 +1,7 @@
+---
+- hosts: "{{ host }}"
+  become: true
+  vars_files:
+    - ['{{inventory_dir}}/secrets.yml']
+  roles:
+   - mongodb-backup

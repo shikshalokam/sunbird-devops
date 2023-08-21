@@ -1,0 +1,69 @@
+### Default variable file for cert-service ###
+
+namespace: {{ namespace }}
+imagepullsecrets: {{ imagepullsecrets }}
+dockerhub: {{ dockerhub }}
+
+env:
+  javaoptions: {{content_java_mem_limit|default('-Xmx600m')}}
+
+replicaCount: {{content_replicacount|default(1)}}
+repository: {{content_repository|default('content-service')}}
+image_tag: {{ image_tag }}
+resources:
+  requests:
+    cpu: {{content_cpu_req|default('100m')}}
+    memory: {{content_mem_req|default('100Mi')}}
+  limits:
+    cpu: {{content_cpu_limit|default('1')}}
+    memory: {{content_mem_limit|default('1024Mi')}}
+network:
+  port: 9000
+  targetport: 9000
+strategy:
+  type: RollingUpdate
+  maxsurge: {{ content_maxsurge|default('25%') }}
+  maxunavailable: {{ content_maxunavailable|default('25%') }}
+
+{{ content_liveness_readiness | to_nice_yaml }}
+{{ opa_liveness_readiness | to_nice_yaml }}
+{{ envoy_liveness_readiness | to_nice_yaml }}
+
+content_opa_enabled: {{ content_opa_enabled | default('true') }}
+
+envoy_resources:
+  requests:
+    cpu: "{{ content_envoy_cpu_req | default('100m') }}"
+    memory: "{{ content_envoy_mem_req | default('100Mi') }}"
+  limits:
+    cpu: "{{ content_envoy_cpu_limit | default('1') }}"
+    memory: "{{ content_envoy_mem_limit | default('1024Mi') }}"
+
+opa_resources:
+  requests:
+    cpu: "{{ content_opa_cpu_req | default('100m') }}"
+    memory: "{{ content_opa_mem_req | default('100Mi') }}"
+  limits:
+    cpu: "{{ content_opa_cpu_limit | default('1') }}"
+    memory: "{{ content_opa_mem_limit | default('1024Mi') }}"
+
+initcontainer_resources:
+  requests:
+    cpu: "{{ content_initcontainer_cpu_req | default('100m') }}"
+    memory: "{{ content_initcontainer_mem_req | default('100Mi') }}"
+  limits:
+    cpu: "{{ content_initcontainer_cpu_limit | default('100m') }}"
+    memory: "{{ content_initcontainer_mem_limit | default('100Mi') }}"
+
+serviceMonitor:
+  enabled: true
+  labels: # labels with which the prometheus choose the serviceMonitor
+    app: prometheus-operator
+    release: prometheus-operator
+
+autoscaling:
+  enabled: {{ content_autoscaling_enabled | default('false') }}
+  minReplicas: {{ content_autoscaling_minReplicas|default(1) }}
+  maxReplicas: {{ content_autoscaling_maxReplicas|default(2) }}
+  targetCPUUtilizationPercentage: {{ content_autoscaling_targetCPUUtilizationPercentage|default(60) }}
+  targetMemoryUtilizationPercentage: {{ content_autoscaling_targetMemoryUtilizationPercentage|default('') }}

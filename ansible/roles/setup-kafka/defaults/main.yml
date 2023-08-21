@@ -1,5 +1,9 @@
 env: dev
 
+ml_kafka_topic_create: false
+uci_kafka_topic_create: false
+av_kafka_topic_create: false
+
 processing_kafka_overriden_topics:
   - name: lms.audit.events
     retention_time: 172800000
@@ -13,6 +17,7 @@ processing_kafka_overriden_topics:
   - name: lms.notification
     retention_time: 172800000
     replication_factor: 1
+  
 
 processing_kafka_topics:
   - name: lms.audit.events
@@ -27,4 +32,94 @@ processing_kafka_topics:
   - name: lms.notification
     num_of_partitions: 1
     replication_factor: 1
+ 
 
+ml_service_topics:
+  - name: ml.observation.raw
+    retention_time: 172800000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: ml.observation.druid
+    retention_time: 172800000
+    replication_factor: 1
+    num_of_partitions: 1    
+  - name: ml.observation.evidence.druid
+    retention_time: 172800000
+    replication_factor: 1  
+    num_of_partitions: 1
+  - name: ml.survey.raw
+    retention_time: 172800000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: ml.survey.druid
+    retention_time: 172800000
+    replication_factor: 1  
+    num_of_partitions: 1      
+  - name: ml.survey.evidence.druid
+    retention_time: 172800000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: ml.submission.rating.raw
+    retention_time: 172800000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: ml.incomplete.observation.raw
+    retention_time: 172800000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: ml.notification.raw
+    retention_time: 172800000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: ml.incomplete.survey.raw
+    retention_time: 172800000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: ml.improvement.project.submission
+    retention_time: 172800000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: ml.projects.submissions
+    retention_time: 172800000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: programuser.info
+    retention_time: 172800000
+    replication_factor: 1  
+    num_of_partitions: 1
+
+uci_service_topics:
+  - name: inbound-error
+    retention_time: 86400000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: inbound-processed
+    retention_time: 86400000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: inbound-unprocessed
+    retention_time: 86400000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: outbound
+    retention_time: 86400000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: campaign
+    retention_time: 86400000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: odk.transformer
+    retention_time: 86400000
+    replication_factor: 1
+    num_of_partitions: 1
+  - name: uci.telemetry
+    retention_time: 86400000
+    replication_factor: 1
+    num_of_partitions: 1
+
+av_service_topics:
+  - name: av.question.bulkupload
+    retention_time: 172800000
+    replication_factor: 1
+    num_of_partitions: 1

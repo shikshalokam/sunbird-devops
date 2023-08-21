@@ -1,0 +1,74 @@
+### Default variable file for cert-service ###
+
+namespace: {{ namespace }}
+imagepullsecrets: {{ imagepullsecrets }}
+dockerhub: {{ dockerhub }}
+
+env:
+  javaoptions: {{analytics_java_mem_limit|default('-Xmx600m')}}
+  min_heap: {{analytics_min_heap_limit|default('-Xms1g')}}
+  max_heap: {{analytics_max_heap_limit|default('-Xmx2g')}}
+  azure_private_account_secret: {{ cloud_private_storage_secret }}
+  azure_private_account_name: {{ cloud_private_storage_accountname }}
+  azure_public_account_secret: {{ cloud_public_storage_secret }}
+  azure_public_account_name: {{ cloud_public_storage_accountname }}
+replicaCount: {{analytics_replicacount|default(1)}}
+repository: {{analytics_repository|default('sunbird-analytics-service')}}
+image_tag: {{ image_tag }}
+resources:
+  requests:
+    cpu: {{analytics_cpu_req|default('100m')}}
+    memory: {{analytics_mem_req|default('100Mi')}}
+  limits:
+    cpu: {{analytics_cpu_limit|default('1')}}
+    memory: {{analytics_mem_limit|default('1024Mi')}}
+network:
+  port: 9000
+  targetport: 9000
+strategy:
+  type: RollingUpdate
+  maxsurge: {{ analytics_maxsurge|default('25%') }}
+  maxunavailable: {{ analytics_maxunavailable|default('25%') }}
+
+{{ analytics_liveness_readiness | to_nice_yaml }}
+{{ opa_liveness_readiness | to_nice_yaml }}
+{{ envoy_liveness_readiness | to_nice_yaml }}
+
+analytics_opa_enabled: {{ analytics_opa_enabled | default('true') }}
+
+envoy_resources:
+  requests:
+    cpu: "{{ analytics_envoy_cpu_req | default('100m') }}"
+    memory: "{{ analytics_envoy_mem_req | default('100Mi') }}"
+  limits:
+    cpu: "{{ analytics_envoy_cpu_limit | default('1') }}"
+    memory: "{{ analytics_envoy_mem_limit | default('1024Mi') }}"
+
+opa_resources:
+  requests:
+    cpu: "{{ analytics_opa_cpu_req | default('100m') }}"
+    memory: "{{ analytics_opa_mem_req | default('100Mi') }}"
+  limits:
+    cpu: "{{ analytics_opa_cpu_limit | default('1') }}"
+    memory: "{{ analytics_opa_mem_limit | default('1024Mi') }}"
+
+initcontainer_resources:
+  requests:
+    cpu: "{{ analytics_initcontainer_cpu_req | default('100m') }}"
+    memory: "{{ analytics_initcontainer_mem_req | default('100Mi') }}"
+  limits:
+    cpu: "{{ analytics_initcontainer_cpu_limit | default('100m') }}"
+    memory: "{{ analytics_initcontainer_mem_limit | default('100Mi') }}"
+
+serviceMonitor:
+  enabled: true
+  labels: # labels with which the prometheus choose the serviceMonitor
+    app: prometheus-operator
+    release: prometheus-operator
+
+autoscaling:
+  enabled: {{ analytics_autoscaling_enabled | default('false') }}
+  minReplicas: {{ analytics_autoscaling_minReplicas|default(1) }}
+  maxReplicas: {{ analytics_autoscaling_maxReplicas|default(2) }}
+  targetCPUUtilizationPercentage: {{ analytics_autoscaling_targetCPUUtilizationPercentage|default(60) }}
+  targetMemoryUtilizationPercentage: {{ analytics_autoscaling_targetMemoryUtilizationPercentage|default('') }}

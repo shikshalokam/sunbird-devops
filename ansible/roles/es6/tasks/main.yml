@@ -31,15 +31,26 @@
   tags:
       - plugins
 
-# Install Elasticsearch plugin for backups
-- name: include elasticsearch plugin install
-  include: azure-plugin.yml
-
 #We always execute xpack as we may need to remove features
 - name: include xpack/elasticsearch-xpack.yml
   include: xpack/elasticsearch-xpack.yml
   tags:
       - xpack
+
+- name: include plugins/create-keystore.yml
+  include: plugins/create-keystore.yml
+
+- name: include plugins/repository-azure.yml
+  include: plugins/repository-azure.yml
+  when: cloud_service_provider == "azure"
+
+- name: include plugins/repository-s3.yml
+  include: plugins/repository-s3.yml
+  when: cloud_service_provider == "aws"
+
+- name: include plugins/repository-gcs.yml
+  include: plugins/repository-gcs.yml
+  when: cloud_service_provider == "gcloud"
 
 - name: flush handlers
   meta: flush_handlers

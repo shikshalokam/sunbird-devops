@@ -1,0 +1,15 @@
+---
+- hosts: local
+  gather_facts: no
+  vars_files:
+    - "{{inventory_dir}}/secrets.yml"
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+  pre_tasks:
+    - name: check for kong db migration
+      include_role: 
+        name: kong-migration
+      when: release_name == "apimanager"
+  roles:
+    - "{{ role_name }}"
+

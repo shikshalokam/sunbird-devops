@@ -1,0 +1,69 @@
+### Default variable file for cert-registry-service ###
+
+namespace: {{ namespace }}
+imagepullsecrets: {{ imagepullsecrets }}
+dockerhub: {{ dockerhub }}
+
+env:
+  javaoptions: {{certregistry_java_mem_limit|default('-Xmx600m')}}
+
+replicaCount: {{certregistry_replicacount|default(1)}}
+repository: {{certregistry_repository|default('cert_registry_service')}}
+image_tag: {{ image_tag }}
+resources:
+  requests:
+    cpu: {{certregistry_cpu_req|default('100m')}}
+    memory: {{certregistry_mem_req|default('100Mi')}}
+  limits:
+    cpu: {{certregistry_cpu_limit|default('1')}}
+    memory: {{certregistry_mem_limit|default('1024Mi')}}
+network:
+  port: 9000
+  targetport: 9000
+strategy:
+  type: RollingUpdate
+  maxsurge: {{ certregistry_maxsurge|default('25%') }}
+  maxunavailable: {{ certregistry_maxunavailable|default('25%') }}
+
+{{ certregistry_liveness_readiness | to_nice_yaml }}
+{{ opa_liveness_readiness | to_nice_yaml }}
+{{ envoy_liveness_readiness | to_nice_yaml }}
+
+certregistry_opa_enabled: {{ certregistry_opa_enabled | default('true') }}
+
+envoy_resources:
+  requests:
+    cpu: "{{ certregistry_envoy_cpu_req | default('100m') }}"
+    memory: "{{ certregistry_envoy_mem_req | default('100Mi') }}"
+  limits:
+    cpu: "{{ certregistry_envoy_cpu_limit | default('1') }}"
+    memory: "{{ certregistry_envoy_mem_limit | default('1024Mi') }}"
+
+opa_resources:
+  requests:
+    cpu: "{{ certregistry_opa_cpu_req | default('100m') }}"
+    memory: "{{ certregistry_opa_mem_req | default('100Mi') }}"
+  limits:
+    cpu: "{{ certregistry_opa_cpu_limit | default('1') }}"
+    memory: "{{ certregistry_opa_mem_limit | default('1024Mi') }}"
+
+initcontainer_resources:
+  requests:
+    cpu: "{{ certregistry_initcontainer_cpu_req | default('100m') }}"
+    memory: "{{ certregistry_initcontainer_mem_req | default('100Mi') }}"
+  limits:
+    cpu: "{{ certregistry_initcontainer_cpu_limit | default('100m') }}"
+    memory: "{{ certregistry_initcontainer_mem_limit | default('100Mi') }}"
+
+serviceMonitor:
+  enabled: true
+  labels: # labels with which the prometheus choose the serviceMonitor
+    app: prometheus-operator
+    release: prometheus-operator
+
+autoscaling:
+  enabled: {{ certregistry_autoscaling_enabled | default('false') }}
+  minReplicas: {{ certregistry_autoscaling_minReplicas|default(1) }}
+  maxReplicas: {{ certregistry_autoscaling_maxReplicas|default(2) }}
+  targetCPUUtilizationPercentage: {{ certregistry_autoscaling_targetCPUUtilizationPercentage|default(60) }}
+  targetMemoryUtilizationPercentage: {{ certregistry_autoscaling_targetMemoryUtilizationPercentage|default('') }}

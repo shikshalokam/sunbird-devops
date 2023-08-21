@@ -1,108 +1,142 @@
-################ Core #########################
-[swarm-bootstrap-manager]
-15.0.1.4
+[all:vars]
+# Replace the value deployer to your server login user name, for example ubuntu
+ansible_ssh_user=deployer
+ansible_ssh_private_key_file=/var/lib/jenkins/secrets/deployer_ssh_key
 
+################ Core #########################
 [core-cassandra]
-15.0.0.7
+10.0.1.8
 
 [core-es-1]
-15.0.0.50    # This should be elasticsearch master IP of Core
+10.0.1.8   # This should be elasticsearch master IP of Core
 
 [core-es:children]
 core-es-1
 
-################# LP ##########################
-[search]
-15.0.3.5
+[log-es-1]
+10.1.4.8
 
+[log-es:children]
+log-es-1
+
+[graylog-1]
+10.0.1.9
+
+[graylog:children]
+graylog-1
+
+################# KP ##########################
 [learning]
-15.0.3.11
+10.0.1.5
 
 [composite-search-cluster]
-15.0.2.6
+10.1.4.5
 
 [lp-cassandra]
-15.0.2.7
+10.0.1.8
 
 [dp-cassandra]
-15.0.2.7
+10.0.1.8
 
 [lp-redis]
-15.0.3.11
+10.0.1.5
 
-################# LPA #########################
-[analytics-api]
-15.0.3.6
+################# DP #########################
+[report-cassandra:children]
+core-cassandra
 
 [secor]
-15.0.3.15
+18.3.1.7
 
 [spark]
-15.0.3.12
+10.0.1.6
 
 [cassandra]
-15.0.2.7
+10.0.1.8
 
 [postgres]
-15.0.3.17
+10.0.1.8
 
 [lpa:children]
 spark
 secor
 analytics-api
 cassandra
-########################### DP #############################
 
 [kafka-indexer]
-15.0.3.8
+10.0.1.6
 
 [influxdb]
-15.0.3.6
+10.0.1.6
 
 [redis]
-15.0.3.5
+10.0.1.5
 
 [redisall:children]
 redis
 
 [processing-cluster-kafka]
-15.0.3.8
-15.0.3.7
+10.0.1.5
 
 [processing-cluster-zookeepers]
-15.0.3.8
-15.0.3.7
+10.0.1.5
 
-[telemetry-search-cluster1]
-15.0.2.6
+[ingestion-cluster-kafka:children]
+processing-cluster-kafka
 
-[telemetry-search-cluster:children]
-telemetry-search-cluster1
+[ingestion-cluster-zookeeper:children]
+processing-cluster-zookeepers
 
 [zookeeper:children]
 processing-cluster-zookeepers
 
-[telemetry-search-cluster-kibana-node:children]
-telemetry-search-cluster1
-
-[yarn-master]
-15.0.3.10
-
-[yarn-slave]
-15.0.3.13
-
-[yarn:children]
-yarn-master
-yarn-slave
-
 [local]
-localhost
+localhost ansible_connection=local
+
+[druid-postgres]
+10.0.1.8
+
+[rollup-coordinator]
+raw-coordinator
+
+[raw-coordinator]
+10.0.1.9
+
+[raw-overlord]
+10.0.1.9
+
+[raw-broker]
+10.0.1.9
+
+[raw-historical]
+10.0.1.9
+
+[raw-middlemanager]
+10.0.1.9
+
+[raw-graphite]
+10.0.1.9
+
+[raw-zookeeper]
+10.0.1.9
+
+[druid-raw:children]
+raw-coordinator
+raw-overlord
+raw-broker
+raw-historical
+raw-middlemanager
+raw-graphite
+raw-zookeeper
+
+[druid-raw:vars]
+cluster=raw
 
 [broker]
-0.0.0.0 #### its required for data products deploy
+10.0.1.9
 
 [coordinator]
-0.0.0.0 #### its required for analytics deploy
+10.0.1.9
 
 [dp:children]
 local
@@ -110,51 +144,13 @@ processing-cluster-kafka
 processing-cluster-zookeepers
 zookeeper
 postgres
-telemetry-search-cluster
-telemetry-search-cluster-kibana-node
-yarn
 kafka-indexer
 influxdb
 lpa
+druid-raw
+druid-postgres
+broker
+coordinator
 
 [env:children]
-swarm-bootstrap-manager
 dp
-
-[env:vars]
-ansible_ssh_user=deployer
-ansible_ssh_private_key_file=/var/lib/jenkins/secrets/deployer_ssh_key
-
-
-########################### Monitoring ##########################
-[yarn-ps]
-15.0.3.10
-15.0.3.13
-
-[logstash-ps]
-15.0.3.8
-
-[es-ps]
-15.0.2.6
-
-[process-exporter:children]
-yarn-ps
-logstash-ps
-es-ps
-secor-ps
-analytics-ps
-kafka-ps
-
-[secor-ps]
-15.0.3.15
-
-[analytics-ps]
-15.0.3.6
-
-[kafka-ps]
-15.0.3.8
-15.0.3.7
-
-[all:vars]
-ansible_ssh_user=deployer
-ansible_ssh_private_key_file=/var/lib/jenkins/secrets/deployer_ssh_key

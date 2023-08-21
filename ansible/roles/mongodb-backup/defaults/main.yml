@@ -1,0 +1,4 @@
+mongo_backup_dir: '/tmp/mongo-backup'
+
+cloud_storage_mongodbbackup_bucketname: "{{cloud_storage_management_bucketname}}"
+cloud_storage_mongodbbackup_foldername: 'mongodb-backup'

@@ -29,7 +29,6 @@
           node.master: "{{ es_etc_node_master | default('true') }}",
           bootstrap.memory_lock: true,
         },
-        es_heap_size: "2g",
         es_etc_discovery_zen_ping_unicast_hosts: "{{ groups['es'] }}",
         es_etc_cluster_name: "{{ app_es_etc_cluster_name }}"
       }
@@ -37,39 +36,21 @@
   tags:
     - es
 
-- hosts: log-es
-  gather_facts: true
-  become: yes
-  vars_files:
-    - ['{{inventory_dir}}/secrets.yml', 'secrets/{{env}}.yml']
-  roles:
-    - openjdk
-    - application_logger_elasticsearch
-  tags:
-    - log-es
-
 - hosts: postgresql-master
   become: yes
+  vars:
+    # Ref: https://github.com/geerlingguy/ansible-role-postgresql/issues/136
+    postgresql_global_config_options:
+    - option: listen_addresses
+      value: "{{ ansible_default_ipv4.address }}"
   vars_files:
     - ['{{inventory_dir}}/secrets.yml', 'secrets/{{env}}.yml']
   pre_tasks:
     - name: install setfacl support
       become: yes
-      apt: pkg=acl
+      apt:
+        name: ['acl', 'python-psycopg2']
   roles:
-    - postgresql-master
+    - postgresql
   tags:
-    - postgresql-master
-
-- hosts: postgresql-slave
-  become: yes
-  vars_files:
-    - ['{{inventory_dir}}/secrets.yml', 'secrets/{{env}}.yml']
-  pre_tasks:
-    - name: install setfacl support
-      become: yes
-      apt: pkg=acl
-  roles:
-    - postgresql-slave
-  tags:
-    - postgresql-slave
+    - postgresql

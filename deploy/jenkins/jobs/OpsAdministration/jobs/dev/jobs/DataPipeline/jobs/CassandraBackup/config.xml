@@ -14,9 +14,9 @@
     <jenkins.model.BuildDiscarderProperty>
       <strategy class="hudson.tasks.LogRotator">
         <daysToKeep>-1</daysToKeep>
-        <numToKeep>-1</numToKeep>
+        <numToKeep>10</numToKeep>
         <artifactDaysToKeep>-1</artifactDaysToKeep>
-        <artifactNumToKeep>5</artifactNumToKeep>
+        <artifactNumToKeep>2</artifactNumToKeep>
       </strategy>
     </jenkins.model.BuildDiscarderProperty>
     <org.jenkinsci.plugins.workflow.job.properties.DisableConcurrentBuildsJobProperty/>
@@ -50,11 +50,11 @@ return &quot;&quot;&quot;&lt;input name=&quot;value&quot; value=&quot;${private_
 }
 else
 return &quot;&quot;&quot;&lt;b&gt;This parameter is not used&lt;/b&gt;&quot;&quot;&quot;</script>
-              <sandbox>false</sandbox>
+              <sandbox>true</sandbox>
             </secureScript>
             <secureFallbackScript plugin="script-security@1.58">
               <script>return &quot;&quot;&quot;&lt;b&gt;This parameter is not used&lt;/b&gt;&quot;&quot;&quot;</script>
-              <sandbox>false</sandbox>
+              <sandbox>true</sandbox>
             </secureFallbackScript>
           </script>
           <projectName>CassandraBackup</projectName>
@@ -76,11 +76,11 @@ return &quot;&quot;&quot;&lt;input name=&quot;value&quot; value=&quot;&quot; cla
 }
 else
 return &quot;&quot;&quot;&lt;b&gt;This parameter is not used&lt;/b&gt;&quot;&quot;&quot;</script>
-              <sandbox>false</sandbox>
+              <sandbox>true</sandbox>
             </secureScript>
             <secureFallbackScript plugin="script-security@1.58">
               <script>return &quot;&quot;&quot;&lt;b&gt;This parameter is not used&lt;/b&gt;&quot;&quot;&quot;</script>
-              <sandbox>false</sandbox>
+              <sandbox>true</sandbox>
             </secureFallbackScript>
           </script>
           <projectName>CassandraBackup</projectName>
@@ -103,7 +103,7 @@ return &quot;&quot;&quot;&lt;b&gt;This parameter is not used&lt;/b&gt;&quot;&quo
     <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
       <triggers>
         <hudson.triggers.TimerTrigger>
-          <spec></spec>
+          <spec>30 5 * * *</spec>
         </hudson.triggers.TimerTrigger>
       </triggers>
     </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
@@ -118,7 +118,7 @@ return &quot;&quot;&quot;&lt;b&gt;This parameter is not used&lt;/b&gt;&quot;&quo
       </userRemoteConfigs>
       <branches>
         <hudson.plugins.git.BranchSpec>
-          <name>refs/tags/tag-for-backups</name>
+          <name>${branch_or_tag}</name>
         </hudson.plugins.git.BranchSpec>
       </branches>
       <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>

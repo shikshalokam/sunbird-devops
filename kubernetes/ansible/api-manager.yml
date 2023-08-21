@@ -1,0 +1,12 @@
+---
+- name: Kong API
+  hosts: local
+  become: yes
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+    ANSIBLE_PYTHON_INTERPRETER: "/usr/bin/python2"
+  vars_files:
+    - "{{inventory_dir}}/secrets.yml"
+  roles:
+    - {role: kong-api, tags: ['kong-api']}
+    - {role: kong-consumer, tags: ['kong-consumer']}

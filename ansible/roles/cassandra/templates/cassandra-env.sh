@@ -1,3 +1,4 @@
+#!/bin/bash
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -49,6 +50,15 @@ calculate_heap_sizes()
         system_cpu_cores="1"
     fi
 
+    # For sunbird adopter machines, we run ES and Cassandra together.
+    # It'll lead competing for resources.
+    # So in ansible put
+    #   resource_crunch: yes
+    # to run cassandra in a minimal config.
+    # Note: Never do this in production.
+    #
+    # If resource_crunch == yes then take quarter size of the Server
+
     # set max heap size based on the following
     # max(min(1/2 ram, 1024MB), min(1/4 ram, 8GB))
     # calculate 1/2 ram and cap to 1024MB
@@ -56,22 +66,29 @@ calculate_heap_sizes()
     # pick the max
     half_system_memory_in_mb=`expr $system_memory_in_mb / 2`
     quarter_system_memory_in_mb=`expr $half_system_memory_in_mb / 2`
-    max_heap_size_in_mb="$half_system_memory_in_mb"
-    #if [ "$half_system_memory_in_mb" -gt "1024" ]
-    #then
-    #    half_system_memory_in_mb="1024"
-    #fi
-    #if [ "$quarter_system_memory_in_mb" -gt "8192" ]
-    #then
-    #    quarter_system_memory_in_mb="8192"
-    #fi
-    #if [ "$half_system_memory_in_mb" -gt "$quarter_system_memory_in_mb" ]
-    #then
-    #    max_heap_size_in_mb="$half_system_memory_in_mb"
-    #else
-    #    max_heap_size_in_mb="$quarter_system_memory_in_mb"
-    #fi
-    MAX_HEAP_SIZE="${half_system_memory_in_mb}M"
+
+    resource_crunch="{{resource_crunch}}"
+
+    if [ "$half_system_memory_in_mb" -gt "1024" ]
+    then
+        half_system_memory_in_mb="1024"
+    fi
+    if [ "$quarter_system_memory_in_mb" -gt "8192" ]
+    then
+        quarter_system_memory_in_mb="8192"
+    fi
+    if [ "$half_system_memory_in_mb" -gt "$quarter_system_memory_in_mb" ]
+    then
+        max_heap_size_in_mb="$half_system_memory_in_mb"
+    else
+        max_heap_size_in_mb="$quarter_system_memory_in_mb"
+    fi
+
+    if [ $resource_crunch = "yes" ]; then
+      MAX_HEAP_SIZE="${quarter_system_memory_in_mb}M"
+    else
+      MAX_HEAP_SIZE="${max_heap_size_in_mb}M"
+    fi
 
     # Young gen: min(max_sensible_per_modern_cpu_core * num_cores, 1/4 * heap size)
     max_sensible_yg_per_core_in_mb="100"
@@ -218,7 +235,7 @@ fi
 # jmx: metrics and administration interface
 #
 # add this if you're having trouble connecting:
-# JVM_OPTS="$JVM_OPTS -Djava.rmi.server.hostname=<public name>"
+JVM_OPTS="$JVM_OPTS -Djava.rmi.server.hostname={{hostvars[inventory_hostname]['ansible_hostname']}}"
 #
 # see
 # https://blogs.oracle.com/jmxetc/entry/troubleshooting_connection_problems_in_jconsole
@@ -232,12 +249,13 @@ fi
 #if [ "x$LOCAL_JMX" = "x" ]; then
 #    LOCAL_JMX=yes
 #fi
-LOCAL_JMX=no
 # Specifies the default port over which Cassandra will be available for
 # JMX connections.
 # For security reasons, you should not expose this port to the internet.  Firewall it if needed.
 
 JMX_PORT="7199"
+
+LOCAL_JMX=no
 
 if [ "$LOCAL_JMX" = "yes" ]; then
   JVM_OPTS="$JVM_OPTS -Dcassandra.jmx.local.port=$JMX_PORT"

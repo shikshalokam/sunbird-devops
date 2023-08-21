@@ -1,0 +1,34 @@
+### Default variable file for cert-service ###
+
+namespace: {{ namespace }}
+imagepullsecrets: {{ imagepullsecrets }}
+dockerhub: {{ dockerhub }}
+
+
+replicaCount: {{ml_reports_replicacount|default(1)}}
+repository: {{ml_reports_repository|default('ml-reports-service')}}
+image_tag: {{ image_tag }}
+resources:
+  requests:
+    cpu: {{ml_reports_cpu_req|default('100m')}}
+    memory: {{ml_reports_mem_req|default('100Mi')}}
+  limits:
+    cpu: {{ml_reports_cpu_limit|default('1')}}
+    memory: {{ml_reports_mem_limit|default('1024Mi')}}
+network:
+  port: 3000
+  targetport: 3000
+strategy:
+  type: RollingUpdate
+  maxsurge: {{ ml_reports_maxsurge|default('25%') }}
+  maxunavailable: {{ ml_reports_maxunavailable|default('25%') }}
+  
+{{ ml_reports_liveness_readiness | to_nice_yaml }}
+ml_reports_access_basepath: {{ ml_reports_access_basepath | default('/opt/reports/keycloak-public-keys/') }}
+
+autoscaling:
+  enabled: {{ ml_reports_autoscaling_enabled | default('false') }}
+  minReplicas: {{ ml_reports_autoscaling_minReplicas|default(1) }}
+  maxReplicas: {{ ml_reports_autoscaling_maxReplicas|default(2) }}
+  targetCPUUtilizationPercentage: {{ ml_reports_autoscaling_targetCPUUtilizationPercentage|default(60) }}
+  targetMemoryUtilizationPercentage: {{ ml_reports_autoscaling_targetMemoryUtilizationPercentage|default('') }}

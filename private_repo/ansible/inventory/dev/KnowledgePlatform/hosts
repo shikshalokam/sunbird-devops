@@ -1,28 +1,35 @@
-######################## LP ########################
+[all:vars]
+# Replace the value deployer to your server login user name, for example ubuntu
+ansible_ssh_user=deployer
+ansible_ssh_private_key_file=/var/lib/jenkins/secrets/deployer_ssh_key
 
+######################## KP ########################
 [learning1]
-15.0.3.11
-
-[swarm-bootstrap-manager]
-15.0.1.4
+10.0.1.5
 
 [learningall:children]
 learning1
 
-[search1]
-15.0.3.5
-
-[searchall:children]
-search1
-
 [redis1]
-15.0.3.11
+10.0.1.5
 
 [redisall:children]
 redis1
 
+[dial1]
+10.0.1.5
+
+[dial:children]
+dial1
+
+[dp-redis]
+10.0.1.5
+
+[lms-redis]
+10.0.1.5
+
 [learning-neo4j-node1]
-15.0.2.9
+10.0.1.8
 
 # Enable following host, if you're have neo4j cluster and an arbiter for election
 # [arbiter]
@@ -31,53 +38,63 @@ redis1
 [learning-neo4j-cluster:children]
 learning-neo4j-node1
 
-[cassandra-node-1]   # The old cassandra group has been renamed to cassandra-node-* to accomadate for clusters
-15.0.2.7
+[cassandra-node-1]
+10.0.1.8
 
 [cassandra:children]
 cassandra-node-1
 
 [dp-cassandra]
-15.0.2.7
+10.0.1.8
 
 [core-cassandra]
-15.0.2.5
+10.0.1.8
 
 [core-es-1]
-18.0.0.9    # This should be elasticsearch master IP of Core
+10.0.1.8    # This should be elasticsearch master IP of Core
 
 [core-es:children]
 core-es-1
 
+[log-es-1]
+10.0.1.9
+
+[log-es:children]
+log-es-1
+
+[graylog-1]
+10.0.1.9
+
+[graylog:children]
+graylog-1
+
 [composite-search-cluster]
-15.0.2.6
+10.1.4.5
 
 [yarn-master]
-15.0.3.10
+10.0.1.7
 
 [yarn-slave]
-15.0.3.10     #yarn master
-15.0.3.13
+10.0.1.7     #yarn master is also a yarn slave so we run workloads
 
 [yarn:children]
 yarn-master
 yarn-slave
 
 [processing-cluster-kafka]
-15.0.3.14
+10.0.1.5
 
 [processing-cluster-zookeepers]
-15.0.3.14
+10.0.1.5
 
 [zookeeper:children]
 processing-cluster-zookeepers
 
 [local]
-localhost
+localhost ansible_connection=local
 
 [lp:children]
 learningall
-searchall
 learning-neo4j-cluster
 cassandra
 redisall
@@ -89,27 +106,39 @@ local
 
 [env:children]
 lp
-swarm-bootstrap-manager
 
-[env:vars]
-ansible_ssh_user=deployer
-ansible_ssh_private_key_file=/var/lib/jenkins/secrets/deployer_ssh_key
+[es7]
+0.0.0.0
 
-####################### Monitoring ########################
-[logstash-ps]
-15.0.3.11
+[mlworkbench]
+0.0.0.0
 
-[process-exporter:children]
-logstash-ps
-cassandra-ps
+### Lern BB - Adding Lern specific vars here. In future if we want to move it to seperate folder this can be used as the starting point
+[spark]
+10.0.2.4
 
-[cassandra-ps]
-15.0.2.7
+[learning]
+10.0.2.7
 
-[process-exporter:vars]
-ansible_ssh_user=deployer
-ansible_ssh_private_key_file=/var/lib/jenkins/secrets/deployer_ssh_key
+[raw-coordinator]
+10.0.2.7
 
-[all:vars]
-ansible_ssh_user=deployer
-ansible_ssh_private_key_file=/var/lib/jenkins/secrets/deployer_ssh_key
+[raw-overlord]
+10.0.2.7
+
+[raw-broker]
+10.0.2.7
+
+[postgres]
+10.0.2.5
+
+[report-cassandra:children]
+core-cassandra
+
+[lp-cassandra]
+10.0.2.5
+
+[redis]
+10.0.2.2
+
+### Lern BB

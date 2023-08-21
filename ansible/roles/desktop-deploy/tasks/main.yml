@@ -1,0 +1,130 @@
+---
+- name: Copy the desktop assests folder from inside the private repo location to root location.
+  shell: "cp -r {{offline_repo_location}}/private/desktop-assets {{offline_repo_location}}/"
+
+- name: get the date and time for the artifact
+  set_fact:
+    time: "{{ lookup('pipe', 'date +\"%Y-%b-%d\"') }}-{{offline_installer_type}}"
+
+- name: create a directory to store artifacts
+  file:
+    path: "{{offline_repo_location}}/desktop_uploader_assets/{{time}}"
+    state: directory
+    recurse: yes
+
+- name: Get the environment name for the artifact name
+  shell: "cat {{offline_repo_location}}/desktop-assets/{{offline_target_env}}/appConfig.json | jq -r '.APP_NAME'"
+  register: env_name
+
+- name: Display the environment name of the installer
+  debug:
+    msg: "{{env_name.stdout}}"
+
+- name: Create a variable to inject environment name to upload to azure blob
+  set_fact:
+    environment_name: "{{ env_name.stdout }}"
+
+- name: Get the version from the package.json file
+  shell: "cat {{offline_repo_location}}/app_dist/package.json | jq -r '.version'"
+  register: version
+
+- name: Display the version number of the installer
+  debug:
+    msg: "{{version.stdout}}"
+
+- name: Create a variable to inject version in the template
+  set_fact:
+    installer_version: "{{ version.stdout }}"
+
+- name: copy the installer script file and build script for building offline installer
+  template:
+    src: "{{item}}.j2"
+    dest: "{{offline_repo_location}}/{{item}}"
+    mode: '0755'
+  with_items:
+    - build.sh
+    - envfile
+    - setupOfflineInstaller.sh
+
+- name: run the installer script
+  shell: "bash -x {{offline_repo_location}}/build.sh"
+
+- name: this block consists of tasks related to azure storage
+  block:
+    - name: set common azure variables
+      set_fact:
+        blob_container_name: "{{ cloud_storage_offlineinstaller_bucketname }}"
+        container_public_access: "blob"
+        storage_account_name: "{{ cloud_public_storage_accountname }}"
+        storage_account_key: "{{ cloud_public_storage_secret }}"
+
+    - name: upload batch of files to azure storage
+      include_role:
+        name: azure-cloud-storage
+        tasks_from: blob-upload-batch.yml
+      vars:
+        blob_container_folder_path: ""
+        local_file_or_folder_path: "{{ offline_repo_location }}/desktop_uploader_assets"
+    
+    - name: upload batch of files to azure storage
+      include_role:
+        name: azure-cloud-storage
+        tasks_from: blob-upload-batch.yml
+      vars:
+        blob_container_folder_path: "/latest"
+        local_file_or_folder_path: "{{ offline_repo_location }}/desktop_uploader_assets/{{ time }}/"
+  when: cloud_service_provider == "azure"
+
+######################## AWS tasks ##################################
+
+- name: this block consists of tasks related to aws s3
+  block:
+    - name: set common aws variables
+      set_fact:
+        s3_bucket_name: "{{ cloud_storage_offlineinstaller_bucketname }}"
+        aws_access_key_id: "{{ cloud_public_storage_accountname }}"
+        aws_secret_access_key: "{{ cloud_public_storage_secret }}"
+        aws_default_region: "{{ cloud_public_storage_region }}"
+        
+    - name: upload batch of files to aws s3
+      include_role:
+        name: aws-cloud-storage
+        tasks_from: upload-folder.yml
+      vars:
+        s3_path: "{{ offline_installer_storage }}"
+        local_file_or_folder_path: "{{ offline_repo_location }}/desktop_uploader_assets"
+    
+    - name: upload batch of files to aws s3
+      include_role:
+        name: aws-cloud-storage
+        tasks_from: upload-folder.yml
+      vars:
+        s3_path: "{{ offline_installer_storage }}/latest"
+        local_file_or_folder_path: "{{ offline_repo_location }}/desktop_uploader_assets/{{ time }}/"
+  when: cloud_service_provider == "aws"
+  
+### GCP Tasks ###   
+- name: this block consists of tasks related to gcloud storage
+  block:
+    - name: set common gcloud variables
+      set_fact:
+        gcp_storage_service_account_name: "{{ cloud_public_storage_accountname }}"
+        gcp_storage_key_file: "{{ cloud_public_storage_secret }}"
+        gcp_bucket_name: "{{ cloud_storage_offlineinstaller_bucketname }}"
+
+    - name: upload batch of files to gcloud storage
+      include_role:
+        name: gcp-cloud-storage
+        tasks_from: upload-batch.yml
+      vars:
+        gcp_path: ""
+        local_file_or_folder_path: "{{ offline_repo_location }}/desktop_uploader_assets"
+
+    - name: upload batch of files to gcloud storage
+      include_role:
+        name: gcp-cloud-storage
+        tasks_from: upload-batch.yml
+      vars:
+        gcp_path: "latest"
+        local_file_or_folder_path: "{{ offline_repo_location }}/desktop_uploader_assets/{{ time }}/"
+  when: cloud_service_provider == "gcloud"

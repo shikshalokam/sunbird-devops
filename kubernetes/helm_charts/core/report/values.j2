@@ -1,0 +1,69 @@
+
+### variables for report service ###
+
+namespace: {{ namespace }}
+imagepullsecrets: {{ imagepullsecrets }}
+dockerhub: {{ dockerhub }}
+
+replicaCount: {{report_replicacount|default(1)}}
+repository: {{report_repository|default('report-service')}}
+image_tag: {{ image_tag }}
+resources:
+  requests:
+    cpu: {{report_cpu_req|default('100m')}}
+    memory: {{report_mem_req|default('100Mi')}}
+  limits:
+    cpu: {{report_cpu_limit|default('1')}}
+    memory: {{report_mem_limit|default('1024Mi')}}
+network:
+  port: 3030
+  targetport: 3030
+strategy:
+  type: RollingUpdate
+  maxsurge: {{ report_maxsurge|default('25%') }}
+  maxunavailable: {{ report_maxunavailable|default('25%') }}
+
+{{ report_liveness_readiness | to_nice_yaml }}
+{{ opa_liveness_readiness | to_nice_yaml }}
+{{ envoy_liveness_readiness | to_nice_yaml }}
+
+report_opa_enabled: {{ report_opa_enabled | default('true') }}
+
+envoy_resources:
+  requests:
+    cpu: "{{ report_envoy_cpu_req | default('100m') }}"
+    memory: "{{ report_envoy_mem_req | default('100Mi') }}"
+  limits:
+    cpu: "{{ report_envoy_cpu_limit | default('1') }}"
+    memory: "{{ report_envoy_mem_limit | default('1024Mi') }}"
+
+opa_resources:
+  requests:
+    cpu: "{{ report_opa_cpu_req | default('100m') }}"
+    memory: "{{ report_opa_mem_req | default('100Mi') }}"
+  limits:
+    cpu: "{{ report_opa_cpu_limit | default('1') }}"
+    memory: "{{ report_opa_mem_limit | default('1024Mi') }}"
+
+initcontainer_resources:
+  requests:
+    cpu: "{{ report_initcontainer_cpu_req | default('100m') }}"
+    memory: "{{ report_initcontainer_mem_req | default('100Mi') }}"
+  limits:
+    cpu: "{{ report_initcontainer_cpu_limit | default('100m') }}"
+    memory: "{{ report_initcontainer_mem_limit | default('100Mi') }}"
+
+report_access_basepath: {{ report_access_basepath | default('/keys/') }}
+
+serviceMonitor:
+  enabled: true
+  labels: # labels with which the prometheus choose the serviceMonitor
+    app: prometheus-operator
+    release: prometheus-operator
+
+autoscaling:
+  enabled: {{ report_autoscaling_enabled | default('false') }}
+  minReplicas: {{ report_autoscaling_minReplicas|default(1) }}
+  maxReplicas: {{ report_autoscaling_maxReplicas|default(2) }}
+  targetCPUUtilizationPercentage: {{ report_autoscaling_targetCPUUtilizationPercentage|default(60) }}
+  targetMemoryUtilizationPercentage: {{ report_autoscaling_targetMemoryUtilizationPercentage|default('') }}

@@ -1,0 +1,8 @@
+- hosts: mongo
+  become: yes
+  vars_files:
+    - "{{inventory_dir}}/secrets.yml"
+  vars:
+    mongodb_net_bindip: "127.0.0.1,{{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}"
+  roles:
+    - mongodb-cluster

@@ -8,7 +8,12 @@ node() {
         String ANSI_YELLOW = "\u001B[33m"
 
         stage('checkout public repo') {
-            cleanWs()
+            folder = new File("$WORKSPACE/.git")
+            if (folder.exists())
+            {
+               println "Found .git folder. Clearing it.."
+               sh'git clean -fxd'
+            }
             checkout scm
         }
 
@@ -29,8 +34,8 @@ node() {
                        chmod a+x content-plugins/az_copy.sh
                        mv content-plugins ansible
                     """
-                    ansiblePlaybook = "${currentWs}/ansible/plugin.yml"
-                    ansibleExtraArgs = "--tags org_sunbird_questionunit_quml --extra-vars \" plugins_name=${params.plugin_name} source_file=${currentWs}/ansible/content-plugins/${params.plugin_name}\" --vault-password-file /var/lib/jenkins/secrets/vault-pass"  
+                    ansiblePlaybook = "${currentWs}/ansible/plugins.yml"
+                    ansibleExtraArgs = "--extra-vars \" plugins_name=${params.plugin_name} source_file=${currentWs}/ansible/content-plugins/${params.plugin_name}\" --vault-password-file /var/lib/jenkins/secrets/vault-pass"  
                     values.put('ansiblePlaybook', ansiblePlaybook)
                     values.put('ansibleExtraArgs', ansibleExtraArgs)
                     println values
@@ -41,7 +46,8 @@ node() {
                     currentBuild.description = "Artifact: ${values.artifact_version}, Private: ${params.private_branch}, Public: ${params.branch_or_tag}"
                 }
             }
-        }
+            summary()
+     }
     catch (err) {
         currentBuild.result = 'FAILURE'
         throw err
